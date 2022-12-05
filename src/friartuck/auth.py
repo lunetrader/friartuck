@@ -29,12 +29,26 @@ SESSION.headers = {
     "TE": "trailers"
 }
 
-def login(username=config.ROBINHOOD_USERNAME, password=config.ROBINHOOD_PASSWORD, mfa_code=None):
-    """Login to Robinhood API. If already logged in, there is no effect. To reset session expiration
-    you must run friartuck.auth.logout() and then friartuck.auth.login()."""
+def login(
+    username=config.ROBINHOOD_USERNAME,
+    password=config.ROBINHOOD_PASSWORD,
+    mfa_code=None,
+    session_expiration_seconds=config.SESSION_EXPIRATION_SECONDS,
+    session_expiration_tolerance=config.SESSION_EXPIRATION_TOLERANCE):
+    """Login to Robinhood API. If already logged in, there is no effect. 
+    To reset session expiration you must run friartuck.auth.logout() 
+    and then friartuck.auth.login(). If you do not provide an MFA code
+    the function will try to load the current session from the 
+    SESSION_FILE saved session. Session will be purged if the expiration 
+    time is less than 14400 (default). You can adjust it downward.
+    """
+
+    # Try loading pickle file
+
+
     if os.path.exists(config.SESSION_FILE):
         saved_session = pickle.load(config.SESSION_FILE, 'rb')
-        
+
 
     url = 'https://api.robinhood.com/oauth2/token/'
 
