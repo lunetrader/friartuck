@@ -1,5 +1,6 @@
 # Ignore user-specific config.py
 config.py
+friartuck_config.py
 
 # Ignore scrap directory
 scrap/

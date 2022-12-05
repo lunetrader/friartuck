@@ -1,9 +1,11 @@
 import requests
+import uuid
 
 import friartuck_config
 
 # pickle file
 # {"device_token": token, "token_type": bearer, "access_token": 1, "expiration_epoch": 12332.4, "refresh_token": rt}
+# device token is only used once to get access_token and is no longer needed
 
 class FriarTuck:
     def __init__(self, mfa_code=None):
