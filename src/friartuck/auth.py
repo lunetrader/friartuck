@@ -1,17 +1,18 @@
-"""Authentication for friartuck Robinhood Python Access for API version 1.431.4"""
+"""Authentication functions for friartuck Robinhood Python Access for API version 1.431.4"""
 import json
 import os
 import pickle
+import time
 import uuid
 
 import requests
 
 import config
 
+SESSION = requests.Session()
+SESSION_EXPIRATION_EPOCH = None
 DEVICE_TOKEN = None
 LOGGED_IN = False
-SESSION = requests.Session()
-EXPIRATION_EPOCH_TIME = None
 
 SESSION.headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0",
@@ -42,18 +43,10 @@ def login(
     SESSION_FILE saved session. Session will be purged if the expiration 
     time is less than 14400 (default). You can adjust it downward.
     """
-
-    # Try loading pickle file
-
-
-    if os.path.exists(config.SESSION_FILE):
-        saved_session = pickle.load(config.SESSION_FILE, 'rb')
-
-
     url = 'https://api.robinhood.com/oauth2/token/'
 
     payload = {
-        "device_token": f'{uuid.uuid4()}',
+        "device_token": None,
         "client_id": "c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS",
         "expires_in": 86400,
         "grant_type": "password",
@@ -63,6 +56,44 @@ def login(
         "al_pk": "7F867EDC-C71B-467F-B0A1-8DCBA5D4D2E3",
         "al_token": "382638d246336f551.5063349101|r=us-east-1|metabgclr=transparent|guitextcolor=%23000000|metaiconclr=%23555555|meta=3|meta_height=456|meta_width=327|pk=7F867EDC-C71B-467F-B0A1-8DCBA5D4D2E3|at=40|sup=1|rid=85|atp=2|cdn_url=https%3A%2F%2Frobinhood-api.arkoselabs.com%2Fcdn%2Ffc|lurl=https%3A%2F%2Faudio-us-east-1.arkoselabs.com|surl=https%3A%2F%2Frobinhood-api.arkoselabs.com|smurl=https%3A%2F%2Frobinhood-api.arkoselabs.com%2Fcdn%2Ffc%2Fassets%2Fstyle-manager"
     }
+
+    # pickle file should have an epoch time that is the expiration time
+
+    # Try loading session pickle file
+        # two checks:
+        # is session expiration below cutoff
+        # call a real credentialed function to verify token is live
+            # if both pass
+                # set authorized headeres
+                # return out of function if both pass
+                # return dict with success and time to expiration
+    
+    # if that fails
+    # login normally with mfa
+        # if that works
+            # set authorized headers
+            # save pickle file
+
+    # pickle file
+    {"device_token": token, "token_type": bearer, "access_token": 1, "expiration_epoch": 12332.4, "refresh_token": rt}
+
+    if os.path.exists(config.SESSION_FILE):
+        saved_session = pickle.load(config.SESSION_FILE, 'rb')
+        payload['Authorization'] = f"{saved_session['token_type']} {saved_session['access_token']}"
+        
+        SESSION_EXPIRATION_EPOCH = float(payload['expiration_epoch'])
+        
+        if (SESSION_EXPIRATION_EPOCH - time.time()) < session_expiration_tolerance:
+            
+
+    else:
+        pass
+
+
+
+
+    else:
+        print("No pickle file found. Moving to attempt new session login.")
 
     if mfa_code:
         payload["try_passkeys"] = False
@@ -74,7 +105,8 @@ def login(
     return res.text
 
 def logout():
-
+    """Logs out of Robinhood and deletes session data."""
+    pass
 
 if __name__ == "__main__":
     login()
