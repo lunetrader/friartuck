@@ -1,4 +1,5 @@
 import json
+import os
 import pickle
 import sys
 import time
@@ -55,13 +56,7 @@ class FriarTuck:
             self._load_session()
 
             # Throw error if existing session is expiring within expiration tolerance (expiring soon)
-            print("Original seconds to timeout:")
-            print(self._session_data['expires_in'])
-            print("Seconds to timeout:")
-            print((self._session_data['expiration_epoch_timestamp'] - time.time()))
             if (self._session_data['expiration_epoch_timestamp'] - time.time()) < self._session_expiration_tolerance:
-                print("Seconds to auth expiration:")
-                print(self._session_data['expiration_epoch_timestamp'] - time.time())
                 print("Session is expiring within time constraints. Must refresh auth token.")
                 raise Exception("Session is expiring within time constraints. Must refresh auth token.")
 
@@ -78,7 +73,7 @@ class FriarTuck:
 
         # Login with new MFA code
         if not self._login_with_mfa():
-            print("Error loggin in. Please report bug.")
+            print("Error loggin in with mfa code. Please report bug.")
         else:
             pass
 
@@ -118,7 +113,6 @@ class FriarTuck:
         while True:
             json_payload = json.dumps(payload)
             res = self._session.post(url, data=json_payload).json()
-            print(res)
 
             try:
                 if res["detail"]:
@@ -127,13 +121,12 @@ class FriarTuck:
                         payload["mfa_code"] = int(mfa)
                         continue
                     else:
-                        print("Login error. Code is malfunctioning. Please make a bug report. Exiting.")
+                        print("Login mfa error. Code is malfunctioning. Please make a bug report. Exiting.")
                         sys.exit()
             except:
                 pass
 
             if res["access_token"] and res["token_type"]:
-                print("Login success")
                 self._session_data['token_type'] = res['token_type']
                 self._session_data['access_token'] = res['access_token']
                 self._session_data['refresh_token'] = res['refresh_token']
@@ -148,21 +141,51 @@ class FriarTuck:
 
             
     def logout(self):
-        pass
+        url = "https://api.robinhood.com/oauth2/revoke_token/"
+
+        payload = {
+            "client_id": "c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS",
+            "token": self._session_data["access_token"]
+        }
+
+        json_payload = json.dumps(payload)
+        
+        # HTTPS revoke token
+        res = self._session.post(url, data=json_payload)
+
+        # Remove persistent auth data
+        os.remove(self._session_file)
 
     def get_open_option_orders(self):
-        url = "https://api.robinhood.com/options/orders/?states=queued,new%2Cconfirmed,unconfirmed,partially_filled,pending_cancelled"
+        url = "https://api.robinhood.com/options/orders/?states=queued,new,confirmed,unconfirmed,partially_filled,pending_cancelled"
 
         res = self._session.get(url)
-        print(res.text)
+        return res
 
     def get_portfolio_info(self):
         url = "https://api.robinhood.com/accounts/"
 
         res = self._session.get(url)
-        print(res.text)
-        return res.json()
+        return res.text
 
-    def get_open_option_positions(self):
-        pass
+# rh.profiles.load_portfolio_profile()
 
+# rh.profiles.load_account_profile()['buying_power']
+
+#  rh.account.get_day_trades()
+
+#  rh.orders.get_all_open_option_orders()
+
+#  rh.options.get_option_instrument_data_by_id(instr_id)
+
+#  rh.stocks.get_latest_price(ticker)
+
+#  rh.options.get_open_option_positions()
+
+#  rh.options.get_option_market_data_by_id(oid[0])
+
+#  chains = rh.options.get_chains(ticker)['expiration_dates']
+
+#  rh.options.find_tradable_options(ticker, expirationDate=expiration, optionType='')
+
+#  rh.options.get_option_market_data_by_id(id)[0]
