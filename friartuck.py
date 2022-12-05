@@ -9,14 +9,6 @@ import requests
 
 import friartuck_config
 
-# pickle file
-# {"token_type": bearer, 
-# "access_token": 1, 
-# "expiration_epoch": 12332.4,
-# "refresh_token": rt, 
-# "expiration_epoch_timestamp": 221}
-# device token is only used once to get access_token and is no longer needed
-
 class FriarTuck:
     def __init__(self, mfa_code=None):
         # Robinhood Login credentials
@@ -32,6 +24,12 @@ class FriarTuck:
         self._session_file = friartuck_config.SESSION_FILE
 
         # HTTPS Session
+        # pickle file documentation
+        # {"token_type": strint, 
+        # "access_token": string, 
+        # "expiration_epoch": float,
+        # "refresh_token": string, 
+        # "expiration_epoch_timestamp": float}
         self._session_data = {}
         self._session = requests.session()
         self._session.headers = {
@@ -139,7 +137,6 @@ class FriarTuck:
         with open(self._session_file, 'wb') as file:
             pickle.dump(self._session_data, file)
 
-            
     def logout(self):
         url = "https://api.robinhood.com/oauth2/revoke_token/"
 
@@ -160,32 +157,53 @@ class FriarTuck:
         url = "https://api.robinhood.com/options/orders/?states=queued,new,confirmed,unconfirmed,partially_filled,pending_cancelled"
 
         res = self._session.get(url)
-        return res
+        return res.json()
 
     def get_portfolio_info(self):
         url = "https://api.robinhood.com/accounts/"
 
         res = self._session.get(url)
-        return res.text
+        return res.json()
 
-# rh.profiles.load_portfolio_profile()
+    def load_portfolio_profile(self):
+        pass
 
-# rh.profiles.load_account_profile()['buying_power']
+    def load_account_profile(self):
+        pass
 
-#  rh.account.get_day_trades()
+    def get_day_trades(self):
+        pass
 
-#  rh.orders.get_all_open_option_orders()
+    def get_option_instrument_data_by_id(self, instr_id):
+        pass
 
-#  rh.options.get_option_instrument_data_by_id(instr_id)
+    def get_latest_ticker_price(self, ticker):
+        pass
 
-#  rh.stocks.get_latest_price(ticker)
+    def get_open_option_positions(self):
+        pass
 
-#  rh.options.get_open_option_positions()
+    def get_option_market_data_by_id(self, option_id):
+        pass
 
-#  rh.options.get_option_market_data_by_id(oid[0])
+    def get_chains(self, ticker):
+        pass
 
-#  chains = rh.options.get_chains(ticker)['expiration_dates']
+    def find_tradable_options(self, ticker, expirationDate=None, optionType=''):
+        pass
 
-#  rh.options.find_tradable_options(ticker, expirationDate=expiration, optionType='')
+    def get_chains(self, ticker):
+        pass
 
-#  rh.options.get_option_market_data_by_id(id)[0]
+    def cancel_option_order_by_id(self, id=None):
+        pass
+
+    def order_buy_option_limit(self, openclose, debitcredit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc', jsonify=True):
+        pass
+
+    def order_sell_option_limit(self, closeopen, creditdebit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc', jsonify=True):
+        pass
+
+    def cancel_all_option_orders(self):
+        pass
+
