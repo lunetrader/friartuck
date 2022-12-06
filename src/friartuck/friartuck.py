@@ -39,7 +39,7 @@ import uuid
 import requests
 
 try:
-    import friartuck_config
+    import friartuck_config as friartuck_config
 except:
     import friartuck_config_default as friartuck_config
 
