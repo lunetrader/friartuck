@@ -38,7 +38,10 @@ import uuid
 
 import requests
 
-import friartuck_config
+try:
+    import friartuck_config
+except:
+    import friartuck_config_default
 
 class FriarTuck:
     """FriarTuck object handles all authentication and API calls."""
@@ -122,7 +125,9 @@ class FriarTuck:
             return True
 
     def _set_authorization_header(self):
-        self._session.headers['Authorization'] = f"{self._session_data['token_type']} {self._session_data['access_token']}"
+        self._session.headers['Authorization'] = \
+            f"{self._session_data['token_type']} "\
+            f"{self._session_data['access_token']}"
 
     def _set_account_number(self):
         url = "https://api.robinhood.com/accounts/"
@@ -199,12 +204,13 @@ class FriarTuck:
         # HTTPS revoke token
         res = self._session.post(url, data=json_payload)
 
-        # Remove persistent auth data
+        # Remove persistent session data
         self._delete_session_data()
 
     def open_option_orders(self):
-        url = "https://api.robinhood.com/options/orders/?states=queued,new,confirmed,unconfirmed,partially_filled,pending_cancelled"
-
+        url = "https://api.robinhood.com/options/orders/"\
+              "?states=queued,new,confirmed,unconfirmed,"\
+              "partially_filled,pending_cancelled"
         res = self._session.get(url)
         return res.json()
 
@@ -219,8 +225,10 @@ class FriarTuck:
         return res.json()
 
     def day_trades(self):
-        #url = f"https://api.robinhood.com/accounts/{0}/recent_day_trades/'.format(account))
-        pass
+        url = "https://api.robinhood.com/accounts/"\
+              f"{self._robinhood_account_number}/recent_day_trades/"
+        res = self._session.get(url)
+        return res.json()
 
     def get_option_instrument_data_by_id(self, instr_id):
         pass
@@ -240,9 +248,6 @@ class FriarTuck:
     def find_tradable_options(self, ticker, expirationDate=None, optionType=''):
         pass
 
-    def get_chains(self, ticker):
-        pass
-
     def cancel_option_order_by_id(self, id=None):
         pass
 
@@ -254,4 +259,7 @@ class FriarTuck:
 
     def cancel_all_option_orders(self):
         pass
+
+    def fast_cancel_all_option_orders(self):
+        res = self.open_option_orders()
 
