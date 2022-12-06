@@ -41,7 +41,7 @@ import requests
 try:
     import friartuck_config
 except:
-    import friartuck_config_default
+    import friartuck_config_default as friartuck_config
 
 class FriarTuck:
     """FriarTuck object handles all authentication and API calls."""

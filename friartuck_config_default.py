@@ -1,4 +1,15 @@
 """Configuration for friartuck Python Robinhood API wrapper."""
+
+###### 
+#
+# CONFIG INSTRUCTIONS
+#
+# Please edit this file with your Robinhood login credentials below.
+# You can rename this file to friartuck_configy.py if you wish.
+# friartuck.py looks for friartuck_config_default.py
+# or friartuck_config.py for loading configuration.
+######
+
 import os
 
 # Robinhood credentials
