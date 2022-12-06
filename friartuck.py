@@ -308,10 +308,10 @@ class FriarTuck:
         except:
             return None
 
-    def order_buy_option_limit(self, open_close, debit_credit, limit, ticker, quantity, expiration_date, strike, call_put, time_in_force='gtc'):
+    def order_option_limit(self, buy_sell, open_close, debit_credit, limit, ticker, quantity, expiration_date, strike, call_put, time_in_force='gtc'):
         ticker = ticker.upper().strip()
 
-        id = self.id_for_option(ticker, expiration_date, strike, call_put)
+        option_id = self.id_for_option(ticker, expiration_date, strike, call_put)
         
         payload = {
             "account": f"https://api.robinhood.com/accounts/{self._robinhood_account_number}/",
@@ -320,9 +320,9 @@ class FriarTuck:
             "legs": [
                 {
                     "position_effect": open_close,
-                    "side": "buy",
+                    "side": buy_sell,
                     "ratio_quantity": 1,
-                    "option": f"https://api.robinhood.com/options/instruments/{id}/"
+                    "option": f"https://api.robinhood.com/options/instruments/{option_id}/"
                 }
             ],
             "type": "limit",
@@ -340,11 +340,7 @@ class FriarTuck:
         res =  self._session.post(url, json_payload)
         return res.json()
 
-    def order_sell_option_limit(self, open_close, debit_credit, limit, ticker, quantity, expiration_date, strike, call_put, time_in_force='gtc'):
-        ticker = ticker.upper().strip()
-
-        id = self.id_for_option(ticker, expiration_date, strike, call_put)
-        
+    def order_option_limit_by_id(self, option_id, buy_sell, open_close, debit_credit, limit, quantity, time_in_force='gtc'):
         payload = {
             "account": f"https://api.robinhood.com/accounts/{self._robinhood_account_number}/",
             "direction": debit_credit,
@@ -352,9 +348,9 @@ class FriarTuck:
             "legs": [
                 {
                     "position_effect": open_close,
-                    "side": "sell",
+                    "side": buy_sell,
                     "ratio_quantity": 1,
-                    "option": f"https://api.robinhood.com/options/instruments/{id}/"
+                    "option": f"https://api.robinhood.com/options/instruments/{option_id}/"
                 }
             ],
             "type": "limit",
@@ -370,6 +366,10 @@ class FriarTuck:
 
         url = "https://api.robinhood.com/options/orders/"
         res =  self._session.post(url, json_payload)
+        return res.json()
+
+    def cancel_option_order_by_url(self, cancel_url):
+        res = self._session.post(cancel_url)
         return res.json()
 
     def cancel_all_open_option_orders(self):
@@ -380,9 +380,7 @@ class FriarTuck:
 
         for order in orders:
             cancel_url = order["cancel_url"]
-            res = self._session.post(cancel_url)
-            responses.append(res.json())
+            res = self.cancel_option_order_by_url(cancel_url)
+            responses.append(res)
 
         return responses
-            
-
