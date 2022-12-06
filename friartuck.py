@@ -230,19 +230,23 @@ class FriarTuck:
         res = self._session.get(url)
         return res.json()
 
-    def get_option_instrument_data_by_id(self, instr_id):
+    def option_instrument_data_by_id(self, id):
+        url = f"https://api.robinhood.com/options/instruments/{id}/"
+        res = self._session.get(url)
+        return res.json()
+
+    def option_market_data_by_id(self, id):
+        url = f"https://api.robinhood.com/marketdata/options/{id}/"
+        res = self._session.get(url)
+        return res.json()
+
+    def ticker_price(self, ticker):
         pass
 
-    def get_latest_ticker_price(self, ticker):
+    def open_option_positions(self):
         pass
 
-    def get_open_option_positions(self):
-        pass
-
-    def get_option_market_data_by_id(self, option_id):
-        pass
-
-    def get_chains(self, ticker):
+    def chains(self, ticker):
         pass
 
     def find_tradable_options(self, ticker, expirationDate=None, optionType=''):
@@ -260,6 +264,6 @@ class FriarTuck:
     def cancel_all_option_orders(self):
         pass
 
-    def fast_cancel_all_option_orders(self):
+    def cancel_all_open_option_orders(self):
         res = self.open_option_orders()
 
