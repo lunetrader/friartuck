@@ -287,12 +287,102 @@ class FriarTuck:
         res = self._session.post(url)
         return res.json()
 
-    def order_buy_option_limit(self, openclose, debitcredit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc'):
-        pass
+    def id_for_option(self, ticker, expiration_date, strike, call_put):
+        ticker = ticker.upper().strip()
+        chain_id = self.tradable_chain_id(ticker)
 
-    def order_sell_option_limit(self, closeopen, creditdebit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc'):
-        pass
+        payload = {
+            'chain_id': chain_id,
+            'expiration_dates': expiration_date,
+            'strike_price': strike,
+            'type': call_put,
+            'state': 'active'
+        }
+
+        url = 'https://api.robinhood.com/options/instruments/'
+        res = self._session.get(url, params=payload)
+
+        try:
+            id = res.json()['results'][0]['id']
+            return id
+        except:
+            return None
+
+    def order_buy_option_limit(self, open_close, debit_credit, limit, ticker, quantity, expiration_date, strike, call_put, time_in_force='gtc'):
+        ticker = ticker.upper().strip()
+
+        id = self.id_for_option(ticker, expiration_date, strike, call_put)
+        
+        payload = {
+            "account": f"https://api.robinhood.com/accounts/{self._robinhood_account_number}/",
+            "direction": debit_credit,
+            "time_in_force": time_in_force,
+            "legs": [
+                {
+                    "position_effect": open_close,
+                    "side": "buy",
+                    "ratio_quantity": 1,
+                    "option": f"https://api.robinhood.com/options/instruments/{id}/"
+                }
+            ],
+            "type": "limit",
+            "trigger": "immediate",
+            "price": limit,
+            "quantity": quantity,
+            "override_day_trade_checks": False,
+            "override_dtbp_checks": False,
+            "ref_id": f"{uuid.uuid4()}"
+        }
+
+        json_payload = json.dumps(payload)
+
+        url = "https://api.robinhood.com/options/orders/"
+        res =  self._session.post(url, json_payload)
+        return res.json()
+
+    def order_sell_option_limit(self, open_close, debit_credit, limit, ticker, quantity, expiration_date, strike, call_put, time_in_force='gtc'):
+        ticker = ticker.upper().strip()
+
+        id = self.id_for_option(ticker, expiration_date, strike, call_put)
+        
+        payload = {
+            "account": f"https://api.robinhood.com/accounts/{self._robinhood_account_number}/",
+            "direction": debit_credit,
+            "time_in_force": time_in_force,
+            "legs": [
+                {
+                    "position_effect": open_close,
+                    "side": "sell",
+                    "ratio_quantity": 1,
+                    "option": f"https://api.robinhood.com/options/instruments/{id}/"
+                }
+            ],
+            "type": "limit",
+            "trigger": "immediate",
+            "price": limit,
+            "quantity": quantity,
+            "override_day_trade_checks": False,
+            "override_dtbp_checks": False,
+            "ref_id": f"{uuid.uuid4()}"
+        }
+
+        json_payload = json.dumps(payload)
+
+        url = "https://api.robinhood.com/options/orders/"
+        res =  self._session.post(url, json_payload)
+        return res.json()
 
     def cancel_all_open_option_orders(self):
         res = self.open_option_orders()
+        orders = res["results"]
+
+        responses = []
+
+        for order in orders:
+            cancel_url = order["cancel_url"]
+            res = self._session.post(cancel_url)
+            responses.append(res.json())
+
+        return responses
+            
 
