@@ -2,5 +2,6 @@ import friartuck
 
 if __name__ == "__main__":
     ft = friartuck.FriarTuck()
-    r = ft.option_market_data_by_id("f574d5b2-eebc-4c72-9994-cdf3f67cf6cd")
-    print(r)
+    print(ft.open_option_orders())
+    print(ft.cancel_option_order_by_id("638901f4-7822-4f09-8c68-b03445a673f9"))
+    print(ft.open_option_orders())

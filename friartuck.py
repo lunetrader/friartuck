@@ -240,28 +240,57 @@ class FriarTuck:
         res = self._session.get(url)
         return res.json()
 
-    def ticker_price(self, ticker):
-        pass
+    def ticker_quote(self, ticker):
+        ticker = ticker.upper().strip()
+        url = f"https://api.robinhood.com/quotes/{ticker}/"
+        res = self._session.get(url)
+        return res.json()
 
     def open_option_positions(self):
-        pass
+        url = f"https://api.robinhood.com/options/positions/"
+        res = self._session.get(url)
+        return res.json()
 
     def chains(self, ticker):
+        url = f"https://api.robinhood.com/options/chains/{ticker}/"
+        res = self._session.get(url)
+        return res.json()
+
+    def tradable_chain_id(self, ticker):
+        url = 'https://api.robinhood.com/instruments/'
+        payload = {'symbol': ticker}
+        res = self._session.get(url, params=payload)
+        chain_id = res.json()['results'][0]['tradable_chain_id']
+        return chain_id
+
+    def find_tradable_options(self, ticker, expirationDate=None, strikePrice=None, optionType=None):
+        ticker = ticker.upper().strip()
+        url = "https://api.robinhood.com/options/instruments/"
+        chain_id = self.tradable_chain_id(ticker)
+
+        payload = {"chain_id": chain_id,
+                   "chain_symbol": ticker,
+                   "state": "active"}
+
+        if expirationDate:
+            payload["expiration_dates"] = expirationDate
+        if strikePrice:
+            payload["strike_price"] = strikePrice
+        if optionType:
+            payload["type"] = optionType
+
+        res = self._session.get(url, params=payload)
+        return res.json()
+
+    def cancel_option_order_by_id(self, id):
+        url = f"https://api.robinhood.com/options/orders/{id}/cancel/"
+        res = self._session.post(url)
+        return res.json()
+
+    def order_buy_option_limit(self, openclose, debitcredit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc'):
         pass
 
-    def find_tradable_options(self, ticker, expirationDate=None, optionType=''):
-        pass
-
-    def cancel_option_order_by_id(self, id=None):
-        pass
-
-    def order_buy_option_limit(self, openclose, debitcredit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc', jsonify=True):
-        pass
-
-    def order_sell_option_limit(self, closeopen, creditdebit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc', jsonify=True):
-        pass
-
-    def cancel_all_option_orders(self):
+    def order_sell_option_limit(self, closeopen, creditdebit, limit, ticker, qty, exp, strike, optionType=None, timeInForce='gtc'):
         pass
 
     def cancel_all_open_option_orders(self):
